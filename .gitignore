@@ -47,7 +47,6 @@ slurm*.out
 slurm*.err
 
 # generated image
-*.jpg
 *.png
 
 # archive
@@ -56,3 +55,4 @@ slurm*.err
 # pycache
 __pycache__
 .vscode
+*.jpg

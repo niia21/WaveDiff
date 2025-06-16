@@ -47,10 +47,7 @@ def sample_and_test(args):
     #making sure the ceckpoints are loaded from folder 'checkpoints'
 
     #ckpt_path = "/content/drive/My Drive/Wavelettproject/checkpoints/netG_{}.pth".format(args.epoch_id)
-    
-    #ckpt_path = os.path.join("checkpoints", f"netG_{args.epoch_id}.pth")
-    # to search for checkpoint not in the folder
-    ckpt_path = f"netG_{args.epoch_id}.pth"
+    ckpt_path = os.path.join("checkpoints", f"netG_{args.epoch_id}.pth")
     ckpt = torch.load(ckpt_path, map_location=device)
 
     # loading weights from ddp in single gpu
@@ -68,7 +65,7 @@ def sample_and_test(args):
 
     pos_coeff = Posterior_Coefficients(args, device)
 
-    iters_needed = 50000 // args.batch_size # 50000 needs to be here
+    iters_needed = 200 // args.batch_size # 50000 needs to be here
 
     #save_dir = "./wddgan_generated_samples/{}".format(args.dataset)
     # modifications to make sure it saves the folder and results to google drive
@@ -130,7 +127,7 @@ def sample_and_test(args):
             f.write("GPU Inference time: {:.2f} +/- {:.2f} ms\n".format(mean_syn, std_syn))
         
         print("Inference time: {:.2f}+/-{:.2f}ms".format(mean_syn, std_syn))
-        exit(0) #I want to know both FID and time simultaniously
+        #exit(0) I want to know both FID and time simultaniously
 
     if args.compute_fid:
         for i in range(iters_needed):
@@ -166,7 +163,7 @@ def sample_and_test(args):
                     index = i * args.batch_size + j
                     torchvision.utils.save_image(
                         x, '{}/{}.jpg'.format(save_dir, index))
-                #print('generating batch ', i)
+                print('generating batch ', i)
 
         paths = [save_dir, real_img_dir]
         print(paths)
@@ -187,7 +184,7 @@ def sample_and_test(args):
 
 
 
-    #else: #I also want after computing FID to get that image concatination
+    #else: I also want after computing FID to get that image concatination
         x_t_1 = torch.randn(args.batch_size, args.num_channels,
                             args.image_size, args.image_size).to(device)
         fake_sample = sample_from_model(
@@ -295,8 +292,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     #these two make sure that fid and inference time are always computed  
-    args.measure_time = True # both True to get inference time
-    args.compute_fid = True # time=false, fid=true to get cocatinated pics nd fid score
+    args.measure_time = True
+    args.compute_fid = True
     #
     sample_and_test(args)
 
