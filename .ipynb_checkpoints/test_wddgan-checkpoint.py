@@ -68,7 +68,7 @@ def sample_and_test(args):
 
     pos_coeff = Posterior_Coefficients(args, device)
 
-    iters_needed = 50000 // args.batch_size # 50000 needs to be here
+    iters_needed = 50000 // args.batch_size                             # 50000 needs to be here
 
     #save_dir = "./wddgan_generated_samples/{}".format(args.dataset)
     # modifications to make sure it saves the folder and results to google drive
