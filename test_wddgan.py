@@ -295,8 +295,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     #these two make sure that fid and inference time are always computed  
-    args.measure_time = True # both True to get inference time
-    args.compute_fid = True # time=false, fid=true to get cocatinated pics nd fid score
-    #
+    args.measure_time = False
+    args.compute_fid = True
+    # time=Ture fid=False gives only time
+    # time=false fid=true gives fid and grid
     sample_and_test(args)
 
