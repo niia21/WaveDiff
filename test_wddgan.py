@@ -11,6 +11,7 @@ from DWT_IDWT.DWT_IDWT_layer import IDWT_2D
 from pytorch_fid.fid_score import calculate_fid_given_paths
 from pytorch_wavelets import DWTInverse
 from score_sde.models.ncsnpp_generator_adagn import NCSNpp, WaveletNCSNpp
+import time
 
 #wrdfkvni
 # %%
@@ -68,7 +69,9 @@ def sample_and_test(args):
 
     pos_coeff = Posterior_Coefficients(args, device)
 
-    iters_needed = 50000 // args.batch_size                             # 50000 needs to be here
+    iters_needed = 100#5000 // args.batch_size                             # 50000 needs to be here
+    print(f"Batch size: {args.batch_size}")
+    print(f"Total iterations needed: {iters_needed}")
 
     #save_dir = "./wddgan_generated_samples/{}".format(args.dataset)
     # modifications to make sure it saves the folder and results to google drive
@@ -122,6 +125,8 @@ def sample_and_test(args):
                 torch.cuda.synchronize()
                 curr_time = starter.elapsed_time(ender)
                 timings[rep] = curr_time
+
+        print('🥹 Done with measuring inference time for all generated samples')
         mean_syn = np.sum(timings) / repetitions
         std_syn = np.std(timings)
         ng_output_path = os.path.join(save_dir, "timing_results.txt")
@@ -135,6 +140,11 @@ def sample_and_test(args):
     if args.compute_fid:
         for i in range(iters_needed):
             with torch.no_grad():
+
+                #if i == 0: #added block to see how much time it took to generate 1st batch
+                    #start_time = time.time()
+
+                
                 x_t_1 = torch.randn(
                     args.batch_size, args.num_channels, args.image_size, args.image_size).to(device)
                 fake_sample = sample_from_model(
@@ -166,13 +176,24 @@ def sample_and_test(args):
                     index = i * args.batch_size + j
                     torchvision.utils.save_image(
                         x, '{}/{}.jpg'.format(save_dir, index))
-                #print('generating batch ', i)
+            if (i + 1) % 20 == 0:
+                print(f"✅ {i + 1} batches generated")
+                #if i==0:
+                    #elapsed_time = time.time() - start_time
+                    #print(f"⏱️ Time to generate 1st batch: {elapsed_time:.2f} seconds")
+            
 
+                        
+                    
+                #print('generating batch ', i)
+        print('🫩Done generating batches')
         paths = [save_dir, real_img_dir]
         print(paths)
 
         kwargs = {'batch_size': 100, 'device': device, 'dims': 2048}
+        print('😎Starting to calculate fid')
         fid = calculate_fid_given_paths(paths=paths, **kwargs)
+        print('🥹Finished calculating fid')
         #print('FID = {}'.format(fid))
         #adding where it would write down fid results in a file
         fid_output_path = os.path.join(save_dir, "fid_results.txt")
@@ -282,7 +303,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--z_emb_dim', type=int, default=256)
     parser.add_argument('--t_emb_dim', type=int, default=256)
-    parser.add_argument('--batch_size', type=int, default=200,# default was 200, i made it 64 as RAM was exxiding
+    parser.add_argument('--batch_size', type=int, default=100,# default was 200, i made it 64 as RAM was exxiding
                         help='sample generating batch size')
 
     # wavelet GAN
@@ -295,8 +316,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     #these two make sure that fid and inference time are always computed  
-    args.measure_time = False
-    args.compute_fid = True
+    args.measure_time = True
+    args.compute_fid = False
     # time=Ture fid=False gives only time
     # time=false fid=true gives fid and grid
     sample_and_test(args)

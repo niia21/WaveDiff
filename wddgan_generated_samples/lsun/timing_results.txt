@@ -1,0 +1,1 @@
+GPU Inference time: 1188.98 +/- 5.94 ms
