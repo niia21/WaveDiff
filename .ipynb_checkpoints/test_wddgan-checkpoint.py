@@ -317,7 +317,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     #these two make sure that fid and inference time are always computed  
     args.measure_time = False
-    args.compute_fid = True
+    #args.compute_fid = True
+    
     # time=Ture fid=False gives only time
     # time=false fid=true gives fid and grid
     sample_and_test(args)

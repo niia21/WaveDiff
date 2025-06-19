@@ -203,7 +203,7 @@ def sample_and_test(args):
 
         grid_output_path = os.path.join(save_dir, "samples_{}.jpg".format(args.dataset))
         torchvision.utils.save_image(fake_sample, grid_output_path, nrow=8, padding=0)
-        print(f"Saved image grid to: {grid_output_path}")
+        print(f"Image grid is haved to: {grid_output_path}")
         #
 
 
@@ -226,7 +226,7 @@ def sample_and_test(args):
         fake_sample = to_range_0_1(fake_sample)  # 0-1
         torchvision.utils.save_image(
             fake_sample, './samples_{}.jpg'.format(args.dataset), nrow=8, padding=0)
-        print("Results are saved at samples_{}.jpg".format(args.dataset))
+        print("Image grid is also in this file: samples_{}.jpg".format(args.dataset))
 
 
 if __name__ == '__main__':
@@ -317,7 +317,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     #these two make sure that fid and inference time are always computed  
     args.measure_time = False
-    args.compute_fid = True
+    #args.compute_fid = True
+    
     # time=Ture fid=False gives only time
     # time=false fid=true gives fid and grid
     sample_and_test(args)

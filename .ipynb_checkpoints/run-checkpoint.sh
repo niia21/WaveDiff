@@ -88,7 +88,7 @@ else
 			--num_res_blocks 2 --nz 100 --z_emb_dim 256 --n_mlp 4 --ch_mult 1 2 2 --epoch_id 1300 \
 			--image_size 32 --current_resolution 16 --attn_resolutions 32 \
 			--use_pytorch_wavelet \
-			# --compute_fid --real_img_dir pytorch_fid/cifar10_train_stat.npy \
+			--compute_fid --real_img_dir pytorch_fid/cifar10_train_stat.npy \
 			# --batch_size 100 --measure_time \
 
 	elif [[ $DATASET == stl10 ]]; then
@@ -97,7 +97,7 @@ else
 			--image_size 64 --current_resolution 32 --attn_resolutions 16 \
 			--net_type wavelet \
 			--use_pytorch_wavelet \
-			# --compute_fid --real_img_dir pytorch_fid/stl10_stat.npy \
+			--compute_fid --real_img_dir pytorch_fid/stl10_stat.npy \
 			# --batch_size 100 --measure_time \
 
 	elif [[ $DATASET == celeba_256 ]]; then
@@ -106,7 +106,7 @@ else
 			--current_resolution 128 --attn_resolutions 16 \
 			--net_type wavelet \
 			# --use_pytorch_wavelet \
-			# --compute_fid --real_img_dir ./pytorch_fid/celebahq_stat.npy \
+			--compute_fid --real_img_dir ./pytorch_fid/celebahq_stat.npy \
 			# --batch_size 100 --measure_time \
 
 	elif [[ $DATASET == celeba_512 ]]; then
@@ -115,8 +115,8 @@ else
 			--current_resolution 256 --attn_resolutions 16 \
 			--net_type wavelet \
 			--use_pytorch_wavelet \
-			--batch_size 100 \
-			# --compute_fid --real_img_dir pytorch_fid/celebahq_512_stat.npy \
+			--batch_size 25 \
+			--compute_fid --real_img_dir pytorch_fid/celebahq_512_stat.npy \
 			# --measure_time --batch_size 25 \
 
 	elif [[ $DATASET == celeba_1024 ]]; then
@@ -125,8 +125,7 @@ else
 			--current_resolution 512 --attn_resolutions 0 --patch_size 2 \
 			--net_type wavelet \
             --batch_size 25 \
-            #--batch_size 25 \ 
-			# --compute_fid --real_img_dir pytorch_fid/celebahq_1024_stat.npy \
+			--compute_fid --real_img_dir pytorch_fid/celebahq_1024_stat.npy \
 			# --measure_time --batch_size 25 \
 
 	elif [[ $DATASET == lsun ]]; then
@@ -135,7 +134,7 @@ else
 			--current_resolution 128 --attn_resolutions 16 \
 			--net_type wavelet \
 			--use_pytorch_wavelet \
-			# --compute_fid --compute_fid --real_img_dir pytorch_fid/lsun_church_stat.npy \
+			--compute_fid --compute_fid --real_img_dir pytorch_fid/lsun_church_stat.npy \
 			# --batch_size 100 --measure_time \
 
 	fi
