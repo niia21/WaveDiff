@@ -69,7 +69,7 @@ def sample_and_test(args):
 
     pos_coeff = Posterior_Coefficients(args, device)
 
-    iters_needed = 20000 // args.batch_size                             # 50000 needs to be here
+    iters_needed = 10000 // args.batch_size                             # 50000 needs to be here
     print(f"Batch size: {args.batch_size}")
     print(f"Total iterations needed: {iters_needed}")
 
