@@ -69,7 +69,7 @@ def sample_and_test(args):
 
     pos_coeff = Posterior_Coefficients(args, device)
 
-    iters_needed = 100#5000 // args.batch_size                             # 50000 needs to be here
+    iters_needed = 20000 // args.batch_size                             # 50000 needs to be here
     print(f"Batch size: {args.batch_size}")
     print(f"Total iterations needed: {iters_needed}")
 
@@ -176,7 +176,7 @@ def sample_and_test(args):
                     index = i * args.batch_size + j
                     torchvision.utils.save_image(
                         x, '{}/{}.jpg'.format(save_dir, index))
-            if (i + 1) % 20 == 0:
+            if (i + 1) % 100 == 0:
                 print(f"✅ {i + 1} batches generated")
                 #if i==0:
                     #elapsed_time = time.time() - start_time
@@ -316,8 +316,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     #these two make sure that fid and inference time are always computed  
-    args.measure_time = True
-    args.compute_fid = False
+    args.measure_time = False
+    args.compute_fid = True
     # time=Ture fid=False gives only time
     # time=false fid=true gives fid and grid
     sample_and_test(args)
