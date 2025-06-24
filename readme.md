@@ -149,6 +149,59 @@ Model performance and pretrained checkpoints are provided as below:
 Inference time is computed over 300 trials on a single NVIDIA A100 GPU for a batch size of 100, except for the one of high-resolution CelebA-HQ (512 & 1024) is computed for a batch of 25 samples.
 
 Downloaded pre-trained models should be put in `saved_info/wdd_gan/<DATASET>/<EXP>` directory where `<DATASET>` is defined in [How to run](#how-to-run) section and `<EXP>` corresponds to the folder name of pre-trained checkpoints.
+##Comparison with results I got##
+<table>
+  <tr>
+    <th>Model</th>
+    <th>FID</th>
+    <th>FID I got</th>
+    <th>Time (s)</th>
+    <th>Time I got(s)</th>
+  </tr>
+  <tr>
+    <td>CIFAR-10</td>
+    <td>4.01</td>
+    <td>4.0209</td>
+    <td>0.08</td>
+    <td>0.07</td>
+  </tr>
+  <tr>
+    <td>STL-10</td>
+    <td>12.93</td>
+    <td>12.8488</td>
+    <td>0.38</td>
+    <td>0.38</td>
+  </tr>
+  <tr>
+    <td>CelebA-HQ (256 x 256) </td>
+    <td>5.94</td>
+    <td>5.9878</td>
+    <td>0.79</td>
+    <td>0.59</td>
+  </tr>
+  <tr>
+    <td>CelebA-HQ (512 x 512) </td>
+    <td>6.40</td>
+    <td>6.4982</td>
+    <td>0.59</td>
+    <td>0.468</td>
+  </tr>
+  <tr>
+    <td>LSUN Church</td>
+    <td>5.06</td>
+    <td>5.0463</td>
+    <td>1.54</td>
+    <td>1.188</td>
+  </tr>
+  <tr>
+    <td>CelebA-HQ (1024 x 1024) </td>
+    <td>5.98</td>
+    <td>6.0796</td>
+    <td>0.59</td>
+    <td>0.567</td>
+  </tr>
+</table>
+
 
 ## Evaluation ##
 ### Inference ###
