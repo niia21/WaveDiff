@@ -150,7 +150,33 @@ def sample_and_test(args):
                 fake_sample = sample_from_model(
                     pos_coeff, netG, args.num_timesteps, x_t_1, T, args)
 
+
+                # Skip malformed sample if known bad shape (only for LSUN)
+                # Filter malformed samples for LSUN
+                if args.dataset == 'lsun':
+                    valid_samples = []
+                    for sample in fake_sample:
+                        if sample.shape == torch.Size([12, args.image_size, args.image_size]):
+                            valid_samples.append(sample.unsqueeze(0))
+                    if len(valid_samples) == 0:
+                        print("⚠️ All samples in this batch were malformed. Skipping.")
+                        continue  # Skip this batch
+                    fake_sample = torch.cat(valid_samples, dim=0)
+
+
+        
+
                 fake_sample *= 2
+               
+
+
+
+
+
+
+
+                
+                
                 if not args.use_pytorch_wavelet:
                     fake_sample = iwt(
                         fake_sample[:, :3], fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12])
@@ -161,14 +187,15 @@ def sample_and_test(args):
                       fake_sample = iwt((fake_sample[:, :3], [torch.stack(
                         (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
                     except TypeError as e:
+                        
                       #print("⚠️ Failed using pytorch_wavelets-style IWT. Trying IDWT_2D-style call instead.")
-                      fake_sample = iwt(
-                        fake_sample[:, :3],   # LL
-                        fake_sample[:, 3:6],  # LH
-                        fake_sample[:, 6:9],  # HL
-                        fake_sample[:, 9:12]  # HH
+                        fake_sample = iwt(
+                            fake_sample[:, :3],   # LL
+                            fake_sample[:, 3:6],  # LH
+                            fake_sample[:, 6:9],  # HL
+                            fake_sample[:, 9:12]  # HH
                         )
-
+                        
                 fake_sample = torch.clamp(fake_sample, -1, 1)
 
                 fake_sample = to_range_0_1(fake_sample)  # 0-1
@@ -176,7 +203,7 @@ def sample_and_test(args):
                     index = i * args.batch_size + j
                     torchvision.utils.save_image(
                         x, '{}/{}.jpg'.format(save_dir, index))
-            if (i + 1) % 100 == 0:
+            if (i + 1) % 10 == 0:
                 print(f"✅ {i + 1} batches generated")
                 #if i==0:
                     #elapsed_time = time.time() - start_time

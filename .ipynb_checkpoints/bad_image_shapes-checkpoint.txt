@@ -1,0 +1,1 @@
+samples_lsun.jpg	(2048, 6400)
