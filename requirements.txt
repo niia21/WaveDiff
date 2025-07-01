@@ -7,3 +7,6 @@ scipy
 ninja
 einops
 PyWavelets
+torch
+torchvision
+pytorch_wavelets
