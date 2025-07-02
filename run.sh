@@ -89,7 +89,7 @@ else
 			--image_size 32 --current_resolution 16 --attn_resolutions 32 \
 			--use_pytorch_wavelet \
 			--compute_fid --real_img_dir pytorch_fid/cifar10_train_stat.npy \
-			# --batch_size 100 --measure_time \
+			--batch_size 100 --measure_time \
 
 	elif [[ $DATASET == stl10 ]]; then
 		python test_wddgan.py --dataset stl10 --exp wddgan_stl10_exp1_atn16_wg1222_d4_recloss_900ep --num_channels 12 --num_channels_dae 128 --num_timesteps 4 \
@@ -98,7 +98,7 @@ else
 			--net_type wavelet \
 			--use_pytorch_wavelet \
 			--compute_fid --real_img_dir pytorch_fid/stl10_stat.npy \
-			# --batch_size 100 --measure_time \
+			--batch_size 100 --measure_time \
 
 	elif [[ $DATASET == celeba_256 ]]; then
 		python test_wddgan.py --dataset celeba_256 --image_size 256 --exp wddgan_celebahq_exp1_atn16_wg12224_d5_recloss_500ep --num_channels 12 --num_channels_dae 64 \
@@ -107,7 +107,7 @@ else
 			--net_type wavelet \
 			# --use_pytorch_wavelet \
 			--compute_fid --real_img_dir ./pytorch_fid/celebahq_stat.npy \
-			# --batch_size 100 --measure_time \
+			--batch_size 100 --measure_time \
 
 	elif [[ $DATASET == celeba_512 ]]; then
 		python test_wddgan.py --dataset celeba_512 --image_size 512 --exp wddgan_celebahq512_exp1_atn16_wg112244_d6_recloss_400ep --num_channels 12 --num_channels_dae 64 \
@@ -117,7 +117,7 @@ else
 			--use_pytorch_wavelet \
 			--batch_size 25 \
 			--compute_fid --real_img_dir pytorch_fid/celebahq_512_stat.npy \
-			# --measure_time --batch_size 25 \
+			--measure_time --batch_size 25 \
 
 	elif [[ $DATASET == celeba_1024 ]]; then
 		python test_wddgan.py --dataset celeba_1024 --image_size 1024 --exp wddgan_celebahq1024_exp1_wg112244_d6_recloss_400ep --num_channels 12 --num_channels_dae 64 \
@@ -126,7 +126,7 @@ else
 			--net_type wavelet \
             --batch_size 25 \
 			--compute_fid --real_img_dir pytorch_fid/celebahq_1024_stat.npy \
-			# --measure_time --batch_size 25 \
+			--measure_time --batch_size 25 \
 
 	elif [[ $DATASET == lsun ]]; then
 		python test_wddgan.py --dataset lsun --image_size 256 --exp wddgan_lsun_exp1_wg12224_d5_recloss_500ep --num_channels 12 --num_channels_dae 64 \
@@ -135,7 +135,7 @@ else
 			--net_type wavelet \
 			--use_pytorch_wavelet \
 			--compute_fid --compute_fid --real_img_dir pytorch_fid/lsun_church_stat.npy \
-			# --batch_size 100 --measure_time \
+			--batch_size 100 --measure_time \
 
 	fi
 fi
