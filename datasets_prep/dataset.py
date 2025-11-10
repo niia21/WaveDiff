@@ -17,6 +17,16 @@ def create_dataset(args):
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]), download=True)
+    elif args.dataset == 'cifar10tiny':
+        full_dataset = CIFAR10(args.datadir, train=True,transform=transforms.Compose([
+            transforms.Resize(32),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]), download=True)
+        subset_size = 1500
+        random.seed(0)  
+        subset_indices = random.sample(range(len(full_dataset)), subset_size)
+        dataset = Subset(full_dataset, subset_indices)
     elif args.dataset == 'stl10':
         dataset = STL10(args.datadir, split="unlabeled", transform=transforms.Compose([
                         transforms.Resize(64),
