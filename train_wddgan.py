@@ -13,6 +13,7 @@ from diffusion import sample_from_model, sample_posterior, \
     q_sample_pairs, get_time_schedule, \
     Posterior_Coefficients, Diffusion_Coefficients
 from DWT_IDWT.DWT_IDWT_layer import DWT_2D, IDWT_2D
+from DWT_IDWT.steerable_pyr_layer import SPyrForward, SPyrInverse
 from pytorch_wavelets import DWTForward, DWTInverse
 from torch.multiprocessing import Process
 from utils import init_processes, copy_source, broadcast_params
@@ -95,12 +96,16 @@ def train(rank, gpu, args):
     netD = nn.parallel.DistributedDataParallel(netD, device_ids=[gpu])
 
     # Wavelet Pooling
-    if not args.use_pytorch_wavelet:
-        dwt = DWT_2D("haar")
-        iwt = IDWT_2D("haar")
+    if args.use_spyr:
+        dwt = SPyrForward(order=2, height=1).to(device)
+        iwt = SPyrInverse(order=2, height=1).to(device)
     else:
-        dwt = DWTForward(J=1, mode='zero', wave='haar').cuda()
-        iwt = DWTInverse(mode='zero', wave='haar').cuda()
+        if not args.use_pytorch_wavelet:
+            dwt = DWT_2D("haar")
+            iwt = IDWT_2D("haar")
+        else:
+            dwt = DWTForward(J=1, mode='zero', wave='haar').cuda()
+            iwt = DWTInverse(mode='zero', wave='haar').cuda()
 
     num_levels = int(np.log2(args.ori_image_size // args.current_resolution))
 
@@ -153,12 +158,16 @@ def train(rank, gpu, args):
             # sample from p(x_0)
             x0 = x.to(device, non_blocking=True)
 
-            if not args.use_pytorch_wavelet:
-                for i in range(num_levels):
-                    xll, xlh, xhl, xhh = dwt(x0)
+            if args.use_spyr:
+                xll, xh = dwt(x0)  # xll: [B,3,H/2,W/2], xh[0]: [B,3,3,H/2,W/2]
+                xlh, xhl, xhh = torch.unbind(xh[0], dim=2)  # split 3 orientations → 3 "high" slots
             else:
-                xll, xh = dwt(x0)  # [b, 3, h, w], [b, 3, 3, h, w]
-                xlh, xhl, xhh = torch.unbind(xh[0], dim=2)
+                if not args.use_pytorch_wavelet:
+                    for i in range(num_levels):
+                        xll, xlh, xhl, xhh = dwt(x0)
+                else:
+                    xll, xh = dwt(x0)  # [b, 3, h, w], [b, 3, 3, h, w]
+                    xlh, xhl, xhh = torch.unbind(xh[0], dim=2)
 
             real_data = torch.cat([xll, xlh, xhl, xhh], dim=1)  # [b, 12, h, w]
 
@@ -251,16 +260,25 @@ def train(rank, gpu, args):
 
             fake_sample *= 2
             real_data *= 2
-            if not args.use_pytorch_wavelet:
+
+            if args.use_spyr:
                 fake_sample = iwt(
-                    fake_sample[:, :3], fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12])
-                real_data = iwt(
-                    real_data[:, :3], real_data[:, 3:6], real_data[:, 6:9], real_data[:, 9:12])
-            else:
-                fake_sample = iwt((fake_sample[:, :3], [torch.stack(
+                    (fake_sample[:, :3], [torch.stack(
                     (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
-                real_data = iwt((real_data[:, :3], [torch.stack(
+                real_data = iwt(
+                    (real_data[:, :3], [torch.stack(
                     (real_data[:, 3:6], real_data[:, 6:9], real_data[:, 9:12]), dim=2)]))
+            else:
+                if not args.use_pytorch_wavelet:
+                    fake_sample = iwt(
+                        fake_sample[:, :3], fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12])
+                    real_data = iwt(
+                        real_data[:, :3], real_data[:, 3:6], real_data[:, 6:9], real_data[:, 9:12])
+                else:
+                    fake_sample = iwt((fake_sample[:, :3], [torch.stack(
+                        (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
+                    real_data = iwt((real_data[:, :3], [torch.stack(
+                        (real_data[:, 3:6], real_data[:, 6:9], real_data[:, 9:12]), dim=2)]))
 
             fake_sample = (torch.clamp(fake_sample, -1, 1) + 1) / 2  # 0-1
             real_data = (torch.clamp(real_data, -1, 1) + 1) / 2  # 0-1
@@ -416,6 +434,10 @@ if __name__ == '__main__':
                         help='port for master')
     parser.add_argument('--num_workers', type=int, default=4,
                         help='num_workers')
+    # steerable pyr
+    parser.add_argument("--use_spyr", action="store_true",
+                    help="use a steerable pyramid (order=2, 3 orientations) instead of wavelet")
+
 
     args = parser.parse_args()
 
