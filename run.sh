@@ -28,7 +28,7 @@ if [[ $MODE == train ]]; then
 			--ch_mult 1 2 2 --save_content --datadir ./data/cifar-10 \
 			--master_port $MASTER_PORT --num_process_per_node $GPUS \
 			--current_resolution 16 --attn_resolutions 32 --num_disc_layers 3 --rec_loss \
-			--use_pytorch_wavelet \
+			--use_spyr \
 
 	elif [[ $DATASET == stl10 ]]; then
 		python train_wddgan.py --dataset stl10 --image_size 64 --exp wddgan_stl10_exp1_atn16_wg1222_d4_recloss_900ep/ --num_channels 12 --num_channels_dae 128 --num_timesteps 4 \
@@ -38,7 +38,7 @@ if [[ $MODE == train ]]; then
 			--master_port $MASTER_PORT --num_process_per_node $GPUS \
 			--current_resolution 32 --attn_resolutions 16 --num_disc_layers 4 --rec_loss \
 			--net_type wavelet \
-			--use_pytorch_wavelet \
+			--use_spyr \
 
 	elif [[ $DATASET == celeba_256 ]]; then
 		python train_wddgan.py --dataset celeba_256 --image_size 256 --exp wddgan_celebahq_exp1_atn16_wg12224_d5_recloss_500ep --num_channels 12 --num_channels_dae 64 --ch_mult 1 2 2 2 4 --num_timesteps 2 \
@@ -87,7 +87,7 @@ else
 		python test_wddgan.py --dataset cifar10 --exp wddgan_cifar10_exp1_noatn_g122_d3_recloss_1800ep --num_channels 12 --num_channels_dae 128 --num_timesteps 4 \
 			--num_res_blocks 2 --nz 100 --z_emb_dim 256 --n_mlp 4 --ch_mult 1 2 2 --epoch_id 1300 \
 			--image_size 32 --current_resolution 16 --attn_resolutions 32 \
-			--use_pytorch_wavelet \
+			--use_spyr \
 			--compute_fid --real_img_dir pytorch_fid/cifar10_train_stat.npy \
 			--batch_size 100 --measure_time \
 
@@ -96,7 +96,7 @@ else
 			--num_res_blocks 2 --nz 100 --z_emb_dim 256 --n_mlp 4 --ch_mult 1 2 2 2 --epoch_id 600 \
 			--image_size 64 --current_resolution 32 --attn_resolutions 16 \
 			--net_type wavelet \
-			--use_pytorch_wavelet \
+			--use_spyr \
 			--compute_fid --real_img_dir pytorch_fid/stl10_stat.npy \
 			--batch_size 100 --measure_time \
 
