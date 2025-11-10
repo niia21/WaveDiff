@@ -8,6 +8,7 @@ from diffusion import get_time_schedule, Posterior_Coefficients, \
     sample_from_model
 
 from DWT_IDWT.DWT_IDWT_layer import IDWT_2D
+from DWT_IDWT.steerable_pyr_layer import SPyrForward, SPyrInverse
 from pytorch_fid.fid_score import calculate_fid_given_paths
 from pytorch_wavelets import DWTInverse
 from score_sde.models.ncsnpp_generator_adagn import NCSNpp, WaveletNCSNpp
@@ -61,10 +62,15 @@ def sample_and_test(args):
     netG.load_state_dict(ckpt, strict=False)
     netG.eval()
 
-    if not args.use_pytorch_wavelet:
-        iwt = IDWT_2D("haar")
+
+    # !!! changed
+    if args.use_spyr:
+        iwt = SPyrInverse(order=2, height=1).to(device)
     else:
-        iwt = DWTInverse(mode='zero', wave='haar').cuda()
+        if not args.use_pytorch_wavelet:
+            iwt = IDWT_2D("haar")
+        else:
+            iwt = DWTInverse(mode='zero', wave='haar').cuda()
     T = get_time_schedule(args, device)
 
     pos_coeff = Posterior_Coefficients(args, device)
@@ -108,6 +114,8 @@ def sample_and_test(args):
                 #didnt work for celeb_256
                 #fake_sample = iwt((fake_sample[:, :3], [torch.stack(
                     #(fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
+
+                # !!! i though i need to change this, turns out i dont
                 try:
                   fake_sample = iwt((fake_sample[:, :3], [torch.stack(
                     (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
@@ -175,26 +183,28 @@ def sample_and_test(args):
 
 
 
-                
-                
-                if not args.use_pytorch_wavelet:
-                    fake_sample = iwt(
-                        fake_sample[:, :3], fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12])
-                else: #didnt work for celeb_256
+                if args.use_spyr:
+                    fake_sample = iwt((fake_sample[:, :3], [torch.stack(
+                        (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
+                else:
+                    if not args.use_pytorch_wavelet:
+                        fake_sample = iwt(
+                            fake_sample[:, :3], fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12])
+                    else: #didnt work for celeb_256
                     #fake_sample = iwt((fake_sample[:, :3], [torch.stack(
                     #    (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
-                    try:
-                      fake_sample = iwt((fake_sample[:, :3], [torch.stack(
-                        (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
-                    except TypeError as e:
+                        try:
+                            fake_sample = iwt((fake_sample[:, :3], [torch.stack(
+                                (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
+                        except TypeError as e:
                         
                       #print("⚠️ Failed using pytorch_wavelets-style IWT. Trying IDWT_2D-style call instead.")
-                        fake_sample = iwt(
-                            fake_sample[:, :3],   # LL
-                            fake_sample[:, 3:6],  # LH
-                            fake_sample[:, 6:9],  # HL
-                            fake_sample[:, 9:12]  # HH
-                        )
+                            fake_sample = iwt(
+                                fake_sample[:, :3],   # LL
+                                fake_sample[:, 3:6],  # LH
+                                fake_sample[:, 6:9],  # HL
+                                fake_sample[:, 9:12]  # HH
+                            )
                         
                 fake_sample = torch.clamp(fake_sample, -1, 1)
 
@@ -242,12 +252,18 @@ def sample_and_test(args):
             pos_coeff, netG, args.num_timesteps, x_t_1, T, args)
 
         fake_sample *= 2
-        if not args.use_pytorch_wavelet:
-            fake_sample = iwt(
-                fake_sample[:, :3], fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12])
-        else:
+        if args.use_spyr:
             fake_sample = iwt((fake_sample[:, :3], [torch.stack(
                 (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
+        else:
+            if not args.use_pytorch_wavelet:
+                fake_sample = iwt(
+                    fake_sample[:, :3], fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12])
+            else:
+                fake_sample = iwt((fake_sample[:, :3], [torch.stack(
+                    (fake_sample[:, 3:6], fake_sample[:, 6:9], fake_sample[:, 9:12]), dim=2)]))
+                
+
         fake_sample = torch.clamp(fake_sample, -1, 1)
 
         fake_sample = to_range_0_1(fake_sample)  # 0-1
@@ -340,6 +356,11 @@ if __name__ == '__main__':
     parser.add_argument("--no_use_fbn", action="store_true")
     parser.add_argument("--no_use_freq", action="store_true")
     parser.add_argument("--no_use_residual", action="store_true")
+
+    # steerable pyramid
+    parser.add_argument("--use_spyr", action="store_true",
+                    help="Use GPU steerable pyramid instead of wavelet")
+
 
     args = parser.parse_args()
     #these two make sure that fid and inference time are always computed  
