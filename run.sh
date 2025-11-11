@@ -29,6 +29,19 @@ if [[ $MODE == train ]]; then
 			--master_port $MASTER_PORT --num_process_per_node $GPUS \
 			--current_resolution 16 --attn_resolutions 32 --num_disc_layers 3 --rec_loss \
 			--use_spyr \
+			
+	elif [[ $DATASET == cifar10tiny ]]; then
+	python train_wddgan.py --dataset cifar10tiny \
+        --exp wddgan_cifar10tiny_exp1_noatn_g122_d3_recloss_1800ep \
+        --num_channels 12 --num_channels_dae 128 --num_timesteps 4 \
+        --num_res_blocks 2 --batch_size 64 --num_epoch 600 --ngf 64 --nz 100 \
+        --z_emb_dim 256 --n_mlp 4 --embedding_type positional \
+        --use_ema --ema_decay 0.9999 --r1_gamma 0.02 --lr_d 1.25e-4 --lr_g 1.6e-4 --lazy_reg 15 \
+        --ch_mult 1 2 2 --save_content --datadir ./data/cifar-10 \
+        --master_port $MASTER_PORT --num_process_per_node $GPUS \
+        --current_resolution 16 --attn_resolutions 32 --num_disc_layers 3 --rec_loss \
+        --use_spyr \
+        --image_size 32 \
 
 	elif [[ $DATASET == stl10 ]]; then
 		python train_wddgan.py --dataset stl10 --image_size 64 --exp wddgan_stl10_exp1_atn16_wg1222_d4_recloss_900ep/ --num_channels 12 --num_channels_dae 128 --num_timesteps 4 \
