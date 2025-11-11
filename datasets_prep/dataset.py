@@ -5,6 +5,8 @@ import torch
 import torchvision.transforms as transforms
 from torchvision import datasets
 from torchvision.datasets import CIFAR10, STL10
+from torch.utils.data import Subset
+
 
 from .lmdb_datasets import LMDBDataset
 from .lsun import LSUN
