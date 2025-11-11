@@ -71,7 +71,29 @@ class SPyrForward(torch.nn.Module):
                 coeffs = pyr.pyr_coeffs
 
                 # Lowpass residual as our LL (shape ~ H/2^height, W/2^height)
-                ll = torch.from_numpy(coeffs[('residual_lowpass', 0)]).unsqueeze(0)  # [1,hL,wL]
+                #ll = torch.from_numpy(coeffs[('residual_lowpass', 0)]).unsqueeze(0)  # [1,hL,wL]
+                
+                # coeffs is a dict from SteerablePyramidFreq.pyr_coeffs
+                # Try multiple possible keys for the lowpass / residual lowpass
+                if ('residual_lowpass', 0) in coeffs:
+                    lp = coeffs[('residual_lowpass', 0)]
+                elif ('residual_lowpass',) in coeffs:
+                    lp = coeffs[('residual_lowpass',)]
+                else:
+                    # Fallback: use the lowest-scale bands as an approximate lowpass
+                    # (this keeps things running even if pyrtools changed conventions)
+                    low_keys = [k for k in coeffs.keys() if isinstance(k[0], int)]
+                    if not low_keys:
+                        raise KeyError(
+                            "Could not find residual_lowpass in steerable pyramid coeffs; "
+                            "available keys: {}".format(list(coeffs.keys())))
+                     # take the max scale index as "coarsest"
+                    max_scale = max(k[0] for k in low_keys)
+                    # average over orientations at that coarsest scale
+                    ori_keys = [k for k in low_keys if k[0] == max_scale]
+                    lp = sum(coeffs[k] for k in ori_keys) / len(ori_keys)
+
+                ll = torch.from_numpy(lp).unsqueeze(0)  # [1, H_lp, W_lp]
 
                 # Level-0 oriented bands: indices 0..(num_orient-1); here 3 bands
                 # Keep order: map to (LH, HL, HH) "slots"
