@@ -93,13 +93,13 @@ class SPyrForward(torch.nn.Module):
                     ori_keys = [k for k in low_keys if k[0] == max_scale]
                     lp = sum(coeffs[k] for k in ori_keys) / len(ori_keys)
 
-                ll = torch.from_numpy(lp).unsqueeze(0)  # [1, H_lp, W_lp]
+                ll = torch.from_numpy(lp).unsqueeze(0).float()  # [1, H_lp, W_lp]
 
                 # Level-0 oriented bands: indices 0..(num_orient-1); here 3 bands
                 # Keep order: map to (LH, HL, HH) "slots"
                 bands = []
                 for k in range(self.order + 1):  # 3 orientations if order=2
-                    bands.append(torch.from_numpy(coeffs[(0, k)]).unsqueeze(0))  # [1,hB,wB]
+                    bands.append(torch.from_numpy(coeffs[(0, k)]).unsqueeze(0).float())  # [1,hB,wB]
                 hi = torch.stack(bands, dim=0)  # [3,1,hB,wB]
 
                 # Downsample all to H/2, W/2 to match WaveDiff packing
@@ -116,8 +116,8 @@ class SPyrForward(torch.nn.Module):
             ll_list.append(ll_c)
             hi_list.append(hi_c)
 
-        xll = torch.stack(ll_list, dim=0).to(x.device)                # [B,3,H/2,W/2]
-        xh  = torch.stack(hi_list, dim=0).to(x.device)                # [B,3,3,H/2,W/2]
+        xll = torch.stack(ll_list, dim=0).to(x.device, dtype=torch.float32)                # [B,3,H/2,W/2]
+        xh  = torch.stack(hi_list, dim=0).to(x.device, dtype=torch.float32)                # [B,3,3,H/2,W/2]
 
         # Match pytorch_wavelets' API: xh in a list with one level
         return xll, [xh]
