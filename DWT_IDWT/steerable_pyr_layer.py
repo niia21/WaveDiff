@@ -110,7 +110,7 @@ class SPyrForward(torch.nn.Module):
                 hi_c.append(hi_ds.squeeze(1))         # list of [3,H/2,W/2]
 
             # Stack channels → [3,H/2,W/2] and [3,3,H/2,W/2]
-            ll_c = torch.stack(ll_c, dim=0).squeeze(2)                 # [3,H/2,W/2]
+            ll_c = torch.stack(ll_c, dim=0)                            # [3,H/2,W/2]
             hi_c = torch.stack(hi_c, dim=0)                            # [3,3,H/2,W/2]
 
             ll_list.append(ll_c)
