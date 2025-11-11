@@ -163,7 +163,8 @@ class SPyrInverse(torch.nn.Module):
                 # Build a minimal coeffs dict compatible with recon_pyr():
                 #   level 0 oriented bands: (0,k) for k in [0..O-1]
                 #   lowpass residual: ('residual_lowpass',0)
-                coeffs = {('residual_lowpass', 0): ll.numpy()}
+                #coeffs = {('residual_lowpass', 0): ll.numpy()}
+                coeffs = {'residual_lowpass': ll.numpy()}
                 for k in range(O):
                     coeffs[(0, k)] = hi[k].numpy()
 
