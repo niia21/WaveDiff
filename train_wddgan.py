@@ -98,7 +98,8 @@ def train(rank, gpu, args):
     # Wavelet Pooling
     if args.use_spyr:
         dwt = SPyrForward(order=2, height=1).to(device)
-        iwt = SPyrInverse(order=2, height=1).to(device)
+        iwt = SPyrInverse().to(device)
+        #iwt = SPyrInverse(order=2, height=1).to(device)
     else:
         if not args.use_pytorch_wavelet:
             dwt = DWT_2D("haar")
