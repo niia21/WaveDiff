@@ -103,7 +103,7 @@ class SPyrForward(torch.nn.Module):
                 hi = torch.stack(bands, dim=0)  # [3,1,hB,wB]
 
                 # Downsample all to H/2, W/2 to match WaveDiff packing
-                ll_ds = F.avg_pool2d(ll, kernel_size=2, stride=2)     # [1,H/2,W/2]
+                ll_ds = F.avg_pool2d(ll, kernel_size=2, stride=2).squeeze(0)     # [1,H/2,W/2]
                 hi_ds = F.avg_pool2d(hi, kernel_size=2, stride=2)     # [3,1,H/2,W/2]
 
                 ll_c.append(ll_ds)                    # list of [1,H/2,W/2]
