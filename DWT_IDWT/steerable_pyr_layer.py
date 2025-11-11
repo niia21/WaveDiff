@@ -154,7 +154,11 @@ class SPyrInverse(torch.nn.Module):
             for c in range(C):
                 # Upsample back to (H,W) because pyrtools bands are full-size
                 ll = F.interpolate(xll_cpu[b, c][None, None], size=(H, W), mode='bilinear', align_corners=False)[0,0]
-                hi = F.interpolate(xh_cpu[b, c], size=(H, W), mode='bilinear', align_corners=False)  # [3,H,W]
+                #hi = F.interpolate(xh_cpu[b, c], size=(H, W), mode='bilinear', align_corners=False)  # [3,H,W]
+                hi = F.interpolate(xh_cpu[b, c].unsqueeze(0),          # [1, O, h2, w2]
+                                   size=(H, W),
+                                   mode='bilinear',
+                                   align_corners=False)[0]             # [O, H, W]
 
                 # Build a minimal coeffs dict compatible with recon_pyr():
                 #   level 0 oriented bands: (0,k) for k in [0..O-1]
