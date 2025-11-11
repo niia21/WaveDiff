@@ -125,7 +125,74 @@ class SPyrForward(torch.nn.Module):
 
 class SPyrInverse(torch.nn.Module):
     """
-    Reconstruct from (xll, [xh]) back to x in pixel space with pyrtools.recon_pyr().
+    Approximate inverse for SPyrForward used in WaveDiff.
+
+    Input:
+      (xll, [xh]) with:
+        xll:   [B,3,H/2,W/2]
+        xh[0]: [B,3,3,H/2,W/2]   (3 orientations)
+
+    Output:
+      x: [B,3,H,W]  (here H=W=32 for CIFAR)
+
+    This is NOT an exact steerable pyramid inverse.
+    It's a consistent deterministic reconstruction that
+    treats xll as low-frequency content and the summed
+    upsampled bands as high-frequency residuals.
+    """
+
+    def __init__(self, scale_factor: int = 2):
+        super().__init__()
+        self.scale_factor = scale_factor
+
+    def forward(self, tup) -> torch.Tensor:
+        xll, xh_list = tup
+        xh = xh_list[0]                  # [B,3,3,h2,w2]
+        B, C, O, h2, w2 = xh.shape
+        H, W = h2 * self.scale_factor, w2 * self.scale_factor
+
+        # Upsample lowpass to full resolution
+        # [B,3,h2,w2] -> [B,3,H,W]
+        xll_up = torch.nn.functional.interpolate(
+            xll,
+            size=(H, W),
+            mode="bilinear",
+            align_corners=False,
+        )
+
+        # Merge orientations:
+        # reshape [B,3,3,h2,w2] -> [B,3*3,h2,w2]
+        xh_flat = xh.view(B, C * O, h2, w2)
+
+        # Upsample high-freq maps to full resolution
+        # [B,9,h2,w2] -> [B,9,H,W]
+        xh_up = torch.nn.functional.interpolate(
+            xh_flat,
+            size=(H, W),
+            mode="bilinear",
+            align_corners=False,
+        )
+
+        # Reshape back to [B,3,3,H,W] and sum across orientations
+        xh_up = xh_up.view(B, C, O, H, W)
+        xh_sum = xh_up.sum(dim=2)        # [B,3,H,W]
+
+        # Combine low and high frequency components
+        x_rec = xll_up + xh_sum
+
+        # Optionally clamp to valid range (WaveDiff uses [-1,1] internally)
+        x_rec = x_rec.clamp(-1.0, 1.0)
+
+        return x_rec
+
+
+
+
+
+"""
+class SPyrInverse(torch.nn.Module):
+    """
+    #Reconstruct from (xll, [xh]) back to x in pixel space with pyrtools.recon_pyr().
     """
     def __init__(self, order: int = 2, height: int = 1):
         super().__init__()
@@ -133,13 +200,7 @@ class SPyrInverse(torch.nn.Module):
         self.height = height
 
     def forward(self, tup) -> torch.Tensor:
-        """
-        tup: (xll, [xh]) where:
-          xll: [B,3,H/2,W/2]
-          xh[0]: [B,3,3,H/2,W/2]
-        returns:
-          x: [B,3,H,W] in [-1,1]
-        """
+        
         xll, xh_list = tup
         xh = xh_list[0]
         B, C, O, h2, w2 = xh.shape
@@ -181,3 +242,4 @@ class SPyrInverse(torch.nn.Module):
 
         x = torch.stack(outs, dim=0).to(xll.device)  # [B,3,H,W]
         return x
+"""
