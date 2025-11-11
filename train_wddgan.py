@@ -168,10 +168,10 @@ def train(rank, gpu, args):
                 else:
                     xll, xh = dwt(x0)  # [b, 3, h, w], [b, 3, 3, h, w]
                     xlh, xhl, xhh = torch.unbind(xh[0], dim=2)
-            print(f"xll:{xll.shape}")
-            print(f"xlh:{xlh.shape}")
-            print(f"xhl:{xhl.shape}")
-            print(f"xhh:{xhh.shape}")
+            #print(f"xll:{xll.shape}") [64, 3, 1, 16, 16]
+            #print(f"xlh:{xlh.shape}") [64, 3, 16, 16]
+            #print(f"xhl:{xhl.shape}") [64, 3, 16, 16]
+            #print(f"xhh:{xhh.shape}") [64, 3, 16, 16]
             
 
             real_data = torch.cat([xll, xlh, xhl, xhh], dim=1)  # [b, 12, h, w]
