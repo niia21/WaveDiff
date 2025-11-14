@@ -21,7 +21,10 @@ from pyrtools.pyramids import SteerablePyramidFreq as SPyrF
 
 class SPyrForward(torch.nn.Module):
     """
-    Replacement for DWT_2D
+    Replacement for DWT_2D/pytorch_wavelets.DWTForward
+    They return tuple (yl, yh), so we would return the same one
+    
+    
     We need: low-pass residual and 3 oriented bands at level 0
     then downsample by 2 -> (H/2, W/2)
     """
@@ -122,7 +125,11 @@ class SPyrForward(torch.nn.Module):
 
 class SPyrInverse(torch.nn.Module):
     """
-    replacement for IDWT_2D
+    replacement for IDWT_2D/pytorch_wavelets.DWTInverse
+    They return: Reconstructed input of shape (𝑁,𝐶_𝑖𝑛,𝐻_𝑖𝑛,𝑊_𝑖𝑛)
+    So we need to return the same
+
+    
     Input:
       (xll, [xh]) with:
         xll:   [B,3,H/2,W/2]
@@ -133,7 +140,11 @@ class SPyrInverse(torch.nn.Module):
 
     This is NOT an exact mathematical SP inverse.
     It's a deterministic reconstruction, where we take
-    xll and summed over xh and upsample and sum them over
+    xll and summed over xh and upsample and sum them over.
+    We cant use exact inverse recon_pyr that pyrtools provide as
+    recon_pyr() expects a full pyramid. While our defined forward doesnt compute it
+    as we sticked to producing structure line in wavelet [LL, LH, HL, HH], thus only level 0 orientations
+    thus not enough info for creating a proper pyramid
     """
 
     def __init__(self, scale_factor: int = 2):
